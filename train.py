@@ -314,7 +314,7 @@ for iDataSet in range(nDataSet):
                 predict_gnn = np.array([], dtype=np.int64)
                 labels = np.array([], dtype=np.int64)
 
-                train_datas, train_labels = train_loader.__iter__().next()
+                train_datas, train_labels = next(iter(train_loader))
 
                 support_real_labels = train_labels
 
