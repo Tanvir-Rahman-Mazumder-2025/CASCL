@@ -46,7 +46,7 @@ SHOT_NUM_PER_CLASS = train_opt['shot_num_per_class']
 QUERY_NUM_PER_CLASS = train_opt['query_num_per_class']
 EPISODE = train_opt['episode']
 LEARNING_RATE = train_opt['lr']
-GPU = config['gpu']
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 TAR_CLASS_NUM = train_opt['tar_class_num'] # the number of class
 TAR_LSAMPLE_NUM_PER_CLASS = train_opt['tar_lsample_num_per_class'] # the number of labeled samples per class
 WEIGHT_DECAY = train_opt['weight_decay']
@@ -117,11 +117,11 @@ test_label = os.path.join(data_path,target_data_gt)
 Data_Band_Scaler, GroundTruth = utils.load_data(test_data, test_label)
 
 # loss init
-crossEntropy = nn.CrossEntropyLoss().to(GPU)
-cos_criterion = nn.CosineSimilarity(dim=1).to(GPU)
-infoNCE_Loss = loss_function.ContrastiveLoss(batch_size=TAR_CLASS_NUM).to(GPU)
-infoNCE_Loss_SSL = loss_function.ContrastiveLoss(batch_size=128).to(GPU)
-SupConLoss_t = loss_function.SupConLoss(temperature=0.1).to(GPU)
+crossEntropy = nn.CrossEntropyLoss().to(device)
+cos_criterion = nn.CosineSimilarity(dim=1).to(device)
+infoNCE_Loss = loss_function.ContrastiveLoss(batch_size=TAR_CLASS_NUM).to(device)
+infoNCE_Loss_SSL = loss_function.ContrastiveLoss(batch_size=128).to(device)
+SupConLoss_t = loss_function.SupConLoss(temperature=0.1).to(device)
 
 # experimental result index
 nDataSet = 10
@@ -160,9 +160,9 @@ for iDataSet in range(nDataSet):
 
     num_supports, num_samples, query_edge_mask, evaluation_mask = utils.preprocess(TAR_CLASS_NUM, SHOT_NUM_PER_CLASS, QUERY_NUM_PER_CLASS, batch_task, GPU)
 
-    mapping_src = Mapping(SRC_INPUT_DIMENSION, N_DIMENSION).to(GPU)
-    mapping_tar = Mapping(TAR_INPUT_DIMENSION, N_DIMENSION).to(GPU)
-    encoder = Encoder(n_dimension=N_DIMENSION, patch_size=patch_size, emb_size=emb_size, dropout=0.3).to(GPU)
+    mapping_src = Mapping(SRC_INPUT_DIMENSION, N_DIMENSION).to(device)
+    mapping_tar = Mapping(TAR_INPUT_DIMENSION, N_DIMENSION).to(device)
+    encoder = Encoder(n_dimension=N_DIMENSION, patch_size=patch_size, emb_size=emb_size, dropout=0.3).to(device)
 
     mapping_src_optim = torch.optim.SGD(mapping_src.parameters(), lr=LEARNING_RATE, momentum=0.9, weight_decay=WEIGHT_DECAY)
     mapping_tar_optim = torch.optim.SGD(mapping_tar.parameters(), lr=LEARNING_RATE, momentum=0.9, weight_decay=WEIGHT_DECAY)
@@ -172,9 +172,9 @@ for iDataSet in range(nDataSet):
     mapping_tar.apply(utils.weights_init)
     encoder.apply(utils.weights_init)
 
-    mapping_src.to(GPU)
-    mapping_tar.to(GPU)
-    encoder.to(GPU)
+    mapping_src.to(device)
+    mapping_tar.to(device)
+    encoder.to(device)
 
     mapping_src.train()
     mapping_tar.train()
@@ -217,11 +217,11 @@ for iDataSet in range(nDataSet):
         support_tar, support_label_tar = support_dataloader_tar.__iter__().next()
         query_tar, query_label_tar = query_dataloader_tar.__iter__().next()
 
-        support_features_src, semantic_feature_src = encoder(mapping_src(support_src.to(GPU)), semantic_feature=semantic_support_src.to(GPU), s_or_q = "support") # (9, 160)
-        query_features_src = encoder(mapping_src(query_src.to(GPU)))
+        support_features_src, semantic_feature_src = encoder(mapping_src(support_src.to(device)), semantic_feature=semantic_support_src.to(device), s_or_q = "support") # (9, 160)
+        query_features_src = encoder(mapping_src(query_src.to(device)))
 
-        support_features_tar, semantic_feature_tar = encoder(mapping_tar(support_tar.to(GPU)), semantic_feature=semantic_support_tar.to(GPU), s_or_q = "support")  # (9, 160)
-        query_features_tar = encoder(mapping_tar(query_tar.to(GPU)))
+        support_features_tar, semantic_feature_tar = encoder(mapping_tar(support_tar.to(device)), semantic_feature=semantic_support_tar.to(device), s_or_q = "support")  # (9, 160)
+        query_features_tar = encoder(mapping_tar(query_tar.to(device)))
 
         if SHOT_NUM_PER_CLASS > 1:
             support_proto_src = support_features_src.reshape(TAR_CLASS_NUM, SHOT_NUM_PER_CLASS, -1).mean(dim=1)
@@ -232,10 +232,10 @@ for iDataSet in range(nDataSet):
             support_proto_tar = support_features_tar
 
         logits_src = utils.euclidean_metric(query_features_src, support_proto_src)
-        f_loss_src = crossEntropy(logits_src, query_label_src.long().to(GPU))
+        f_loss_src = crossEntropy(logits_src, query_label_src.long().to(device))
 
         logits_tar = utils.euclidean_metric(query_features_tar, support_proto_tar)
-        f_loss_tar = crossEntropy(logits_tar, query_label_tar.long().to(GPU))
+        f_loss_tar = crossEntropy(logits_tar, query_label_tar.long().to(device))
 
         f_loss = f_loss_src + f_loss_tar
 
@@ -252,7 +252,7 @@ for iDataSet in range(nDataSet):
         augment1_target_ssl_data = torch.FloatTensor(data_augment.random_mask_batch_image(target_ssl_data.data.cpu(), 0.8))  # (128, 200, 7, 7)
         augment2_target_ssl_data = torch.FloatTensor(data_augment.random_mask_batch_image(target_ssl_data.data.cpu(), 0.8))  # (128, 200, 7, 7)
         augment_target_ssl_data = torch.cat((augment1_target_ssl_data, augment2_target_ssl_data), dim=0)  # (256, 200, 7, 7)
-        features_augment = encoder(mapping_tar(augment_target_ssl_data.to(GPU)))  # (256, 128)
+        features_augment = encoder(mapping_tar(augment_target_ssl_data.to(device)))  # (256, 128)
 
         augment1_target_ssl_feature = F.normalize(features_augment[:len(target_ssl_data), :], dim = 1)  # (128, 128)
         augment2_target_ssl_feature = F.normalize(features_augment[len(target_ssl_data):, :], dim = 1)  # (128, 128)
@@ -319,7 +319,7 @@ for iDataSet in range(nDataSet):
                 for i, class_id in enumerate(support_real_labels):
                     semantic_support[i] = torch.from_numpy(semantic_mapping_tar[class_id])
 
-                train_features, _ = encoder(mapping_tar(Variable(train_datas).to(GPU)), semantic_feature = semantic_support.to(GPU),  s_or_q = "support")
+                train_features, _ = encoder(mapping_tar(Variable(train_datas).to(device)), semantic_feature = semantic_support.to(device),  s_or_q = "support")
 
                 max_value = train_features.max()
                 min_value = train_features.min()
@@ -332,7 +332,7 @@ for iDataSet in range(nDataSet):
                 for test_datas, test_labels in test_loader:
                     batch_size = test_labels.shape[0]
 
-                    test_features = encoder(mapping_tar((Variable(test_datas).to(GPU))))
+                    test_features = encoder(mapping_tar((Variable(test_datas).to(device))))
                     test_features = (test_features - min_value) * 1.0 / (max_value - min_value)
                     predict_labels = KNN_classifier.predict(test_features.cpu().detach().numpy())
                     test_labels = test_labels.numpy()
