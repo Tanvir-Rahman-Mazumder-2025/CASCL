@@ -200,8 +200,10 @@ for iDataSet in range(nDataSet):
         support_dataloader_tar = get_HBKC_data_loader(task_tar, num_per_class=SHOT_NUM_PER_CLASS, split="train", shuffle=False)
         query_dataloader_tar = get_HBKC_data_loader(task_tar, num_per_class=QUERY_NUM_PER_CLASS, split="test", shuffle=False)
 
-        support_src, support_label_src = support_dataloader_src.__iter__().next()
-        query_src, query_label_src = query_dataloader_src.__iter__().next()
+        support_src_iter = iter(support_dataloader_src)
+        support_src, support_label_src = next(support_src_iter)
+        query_src_iter = iter(query_dataloader_src)
+        query_src, query_label_src = next(query_src_iter)
         support_real_labels_src = task_src.support_real_labels
         support_real_labels_tar = task_tar.support_real_labels
 
