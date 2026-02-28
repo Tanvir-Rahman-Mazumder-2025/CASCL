@@ -3,8 +3,7 @@ import os
 import argparse
 import pickle
 import time
-import importlib 
-imp = importlib 
+import importlib.util
 import logging
 from sklearn import metrics
 from sklearn.neighbors import KNeighborsClassifier
@@ -20,6 +19,11 @@ from model.encoder import Encoder
 from utils.dataloader import get_HBKC_data_loader, Task, get_target_dataset, tagetSSLDataset
 from utils import utils, loss_function, data_augment
 
+
+spec = importlib.util.spec_from_file_location("config_module", args.config)
+config_module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(config_module)
+config = config_module.config
 parser = argparse.ArgumentParser(description="Few Shot Visual Recognition")
 parser.add_argument('--config', type=str, default=os.path.join( './config', 'Indian_pines.py'))
 args = parser.parse_args()
