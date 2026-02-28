@@ -158,7 +158,7 @@ for iDataSet in range(nDataSet):
     target_ssl_dataset = tagetSSLDataset(target_aug_data_ssl, target_aug_label_ssl)
     target_ssl_dataloader = torch.utils.data.DataLoader(target_ssl_dataset, batch_size=64, shuffle=True, drop_last=True)
 
-    num_supports, num_samples, query_edge_mask, evaluation_mask = utils.preprocess(TAR_CLASS_NUM, SHOT_NUM_PER_CLASS, QUERY_NUM_PER_CLASS, batch_task, GPU)
+    num_supports, num_samples, query_edge_mask, evaluation_mask = utils.preprocess(TAR_CLASS_NUM, SHOT_NUM_PER_CLASS, QUERY_NUM_PER_CLASS, batch_task, device)
 
     mapping_src = Mapping(SRC_INPUT_DIMENSION, N_DIMENSION).to(device)
     mapping_tar = Mapping(TAR_INPUT_DIMENSION, N_DIMENSION).to(device)
