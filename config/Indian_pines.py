@@ -1,11 +1,11 @@
 from collections import OrderedDict
 
 config = OrderedDict()
-config['data_path'] = 'datasets'
+config['data_path'] = '/content/drive/MyDrive/HSI'
 config['source_data'] = 'Chikusei_imdb_128_7_7.pickle'
-config['target_data'] = 'IP/indian_pines_corrected.mat'
-config['target_data_gt'] = 'IP/indian_pines_gt.mat'
-config['gpu'] = 0
+config['target_data'] = 'Indian_pines_corrected.mat'
+config['target_data_gt'] = 'Indian_pines_gt.mat'
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 config['log_dir'] = './logs'
 
