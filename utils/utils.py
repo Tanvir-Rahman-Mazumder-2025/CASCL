@@ -116,20 +116,19 @@ def load_data(image_file, label_file):
     image_data = sio.loadmat(image_file)
     label_data = sio.loadmat(label_file)
 
-    data_key = image_file.split('/')[-1].split('.')[0]
-    label_key = label_file.split('/')[-1].split('.')[0]
-    data_all = image_data[data_key]
-    GroundTruth = label_data[label_key]
+    # Use the actual key names inside your .mat files
+    data_all = image_data['indian_pines_corrected']    # lowercase key
+    GroundTruth = label_data['indian_pines_gt']        # check your label file key too
 
     [nRow, nColumn, nBand] = data_all.shape
-    print(data_key, nRow, nColumn, nBand)
+    print('indian_pines_corrected', nRow, nColumn, nBand)
 
     data = data_all.reshape(np.prod(data_all.shape[:2]), np.prod(data_all.shape[2:]))
-    data_scaler = preprocessing.scale(data.astype(float))  # (X-X_mean)/X_std
-    Data_Band_Scaler = data_scaler.reshape(data_all.shape[0], data_all.shape[1],data_all.shape[2])
+    data_scaler = preprocessing.scale(data.astype(float))
+    Data_Band_Scaler = data_scaler.reshape(data_all.shape[0], data_all.shape[1], data_all.shape[2])
 
     return Data_Band_Scaler, GroundTruth
-
+    
 def load_data_houston(image_file, label_file,label_file1):
     image_data = sio.loadmat(image_file)
     label_data = sio.loadmat(label_file)
@@ -208,3 +207,4 @@ def euclidean_metric(a, b):
     b = b.unsqueeze(0).expand(n, m, -1)
     logits = -((a - b)**2).sum(dim=2)
     return logits
+
