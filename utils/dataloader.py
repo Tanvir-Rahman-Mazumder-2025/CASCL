@@ -227,7 +227,8 @@ def get_target_dataset(Data_Band_Scaler, GroundTruth, class_num, tar_lsample_num
         tar_lsample_num_per_class=tar_lsample_num_per_class,
         shot_num_per_class=shot_num_per_class,
         HalfWidth=patch_size // 2)
-    train_datas, train_labels = train_loader.__iter__().next()
+    train_iterator = iter(train_loader)
+    train_datas, train_labels = next(train_iterator)
     print('train labels:', train_labels)
     print('size of train datas:', train_datas.shape)
 
