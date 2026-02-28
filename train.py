@@ -216,8 +216,9 @@ for iDataSet in range(nDataSet):
         for i, class_id in enumerate(support_real_labels_tar):
             semantic_support_tar[i] = torch.from_numpy(semantic_mapping_tar[class_id])
 
-        support_tar, support_label_tar = support_dataloader_tar.__iter__().next()
-        query_tar, query_label_tar = query_dataloader_tar.__iter__().next()
+        support_tar, support_label_tar = next(iter(support_dataloader_tar))
+        query_tar, query_label_tar = next(iter(query_dataloader_tar))
+
 
         support_features_src, semantic_feature_src = encoder(mapping_src(support_src.to(device)), semantic_feature=semantic_support_src.to(device), s_or_q = "support") # (9, 160)
         query_features_src = encoder(mapping_src(query_src.to(device)))
