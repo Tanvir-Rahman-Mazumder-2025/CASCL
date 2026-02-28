@@ -20,16 +20,16 @@ from utils.dataloader import get_HBKC_data_loader, Task, get_target_dataset, tag
 from utils import utils, loss_function, data_augment
 
 
+
+parser = argparse.ArgumentParser(description="Few Shot Visual Recognition")
+parser.add_argument('--config', type=str, default=os.path.join( './config', 'Indian_pines.py'))
+args = parser.parse_args()
 spec = importlib.util.spec_from_file_location("config_module", args.config)
 config_module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(config_module)
 config = config_module.config
-parser = argparse.ArgumentParser(description="Few Shot Visual Recognition")
-parser.add_argument('--config', type=str, default=os.path.join( './config', 'Indian_pines.py'))
-args = parser.parse_args()
-
 # load hyperparameters
-config = imp.load_source("", args.config).config
+
 train_opt = config['train_config']
 data_path = config['data_path']
 source_data = config['source_data']
@@ -69,9 +69,9 @@ labels_tar = ["Alfalfa", "Corn notill", "Corn mintill", "Corn", "Grass pasture",
 # labels_tar = ["Corn", "Cotton", "Sesame", "Broad-leaf soybean", "Narrow-leaf soybean", "Rice", "Water", "Roads and houses", "Mixed weed"]
 
 from transformers import BertModel, BertTokenizer
-model = BertModel.from_pretrained('pretrain-model/bert-base-uncased')
+model = BertModel.from_pretrained('bert-base-uncased')  # download from Hugging Face hub
 model.eval()
-tokenizer = BertTokenizer.from_pretrained('pretrain-model/bert-base-uncased')
+tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 
 encoded_inputs_src = tokenizer(labels_src, padding=True, truncation=True, return_tensors='pt')
 with torch.no_grad():
