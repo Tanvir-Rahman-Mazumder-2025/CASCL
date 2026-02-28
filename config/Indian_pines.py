@@ -1,5 +1,5 @@
 from collections import OrderedDict
-
+import torch
 config = OrderedDict()
 config['data_path'] = '/content/drive/MyDrive/HSI'
 config['source_data'] = 'Chikusei_imdb_128_7_7.pickle'
