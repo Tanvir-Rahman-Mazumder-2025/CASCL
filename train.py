@@ -247,10 +247,10 @@ for iDataSet in range(nDataSet):
 
         # target domain supervised contrastive learning
         try:
-            target_ssl_data, target_ssl_label = target_ssl_iter.next()
-        except Exception as err:
             target_ssl_data, target_ssl_label = next(target_ssl_iter)
-            target_ssl_data, target_ssl_label = target_ssl_iter.next()
+        except StopIteration:
+            target_ssl_iter = iter(target_ssl_dataloader)
+            target_ssl_data, target_ssl_label = next(target_ssl_iter)
 
         augment1_target_ssl_data = torch.FloatTensor(data_augment.random_mask_batch_image(target_ssl_data.data.cpu(), 0.8))  # (128, 200, 7, 7)
         augment2_target_ssl_data = torch.FloatTensor(data_augment.random_mask_batch_image(target_ssl_data.data.cpu(), 0.8))  # (128, 200, 7, 7)
